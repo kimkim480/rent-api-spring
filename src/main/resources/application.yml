@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+  datasource:
+    plataform: postgres
+    url: jdbc:postgresql://localhost:5432/rentx
+    username: docker
+    password: javaspring
+  database:
+    driverClassName: org.postgresql.Driver
+
+server:
+  port: 8080
