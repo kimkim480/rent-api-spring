@@ -2,13 +2,16 @@ package rocketseat.ignite.rentx.rentx.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import rocketseat.ignite.rentx.rentx.dto.CategoryDTO;
 import rocketseat.ignite.rentx.rentx.dto.mapper.CategoryMapper;
 import rocketseat.ignite.rentx.rentx.entity.Category;
 import rocketseat.ignite.rentx.rentx.exception.CategoryAlreadyRegisteredException;
 import rocketseat.ignite.rentx.rentx.exception.CategoryNotFoundException;
+import rocketseat.ignite.rentx.rentx.helper.CSVHelper;
 import rocketseat.ignite.rentx.rentx.repository.CategoryRepository;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -32,13 +35,13 @@ public class CategoryService {
 
         Category categoryToSave = categoryMapper.toModel(categoryDTO);
 
-        this.categoryRepository.save(categoryToSave);
+        categoryRepository.save(categoryToSave);
 
         return categoryDTO;
     }
 
     public List<CategoryDTO> listAll() {
-        List<Category> allCategory = this.categoryRepository.findAll();
+        List<Category> allCategory = categoryRepository.findAll();
 
         return allCategory.stream()
                 .map(categoryMapper::toDTO)
@@ -60,9 +63,29 @@ public class CategoryService {
         categoryToUpdate.setName(categoryDTO.get().getName());
 
 
-        this.categoryRepository.save(categoryToUpdate);
+        categoryRepository.save(categoryToUpdate);
 
         return categoryMapper.toDTO(categoryToUpdate);
+    }
+
+    public void deleteById(String id) throws CategoryNotFoundException {
+        verifyIfCategoryExists(id);
+        categoryRepository.deleteById(id);
+    }
+
+    public CategoryDTO findByName(String name) throws CategoryNotFoundException {
+        Category foundCategory = categoryRepository.findByName(name)
+                .orElseThrow(() -> new CategoryNotFoundException(name));
+        return categoryMapper.toDTO(foundCategory);
+    }
+
+    public void importCSV(MultipartFile file) {
+        try {
+            List<Category> categories = CSVHelper.csvToCategory(file.getInputStream());
+            categoryRepository.saveAll(categories);
+        } catch (IOException e) {
+            throw new RuntimeException("fail to store csv data: " + e.getMessage());
+        }
     }
 
     private Category verifyIfCategoryExists(String id) throws CategoryNotFoundException {
@@ -72,21 +95,10 @@ public class CategoryService {
 
     private void verifyIfIsAlreadyRegistered(String name) throws CategoryAlreadyRegisteredException {
 
-        Optional<Category> categoryAlreadyRegistered = this.categoryRepository.findByName(name);
+        Optional<Category> categoryAlreadyRegistered = categoryRepository.findByName(name);
 
         if (categoryAlreadyRegistered.isPresent()) {
             throw new CategoryAlreadyRegisteredException(name);
         }
-    }
-
-    public void deleteById(String id) throws CategoryNotFoundException {
-        verifyIfCategoryExists(id);
-        this.categoryRepository.deleteById(id);
-    }
-
-    public CategoryDTO findByName(String name) throws CategoryNotFoundException {
-        Category foundCategory = categoryRepository.findByName(name)
-                .orElseThrow(() -> new CategoryNotFoundException(name));
-        return categoryMapper.toDTO(foundCategory);
     }
 }
