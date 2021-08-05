@@ -5,16 +5,16 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
-
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryDTO {
+public class SpecificationDTO {
 
     private String id;
 
@@ -23,10 +23,8 @@ public class CategoryDTO {
     private String name;
 
     @NotEmpty
-    @Size(min = 5)
+    @Size(min = 2, max = 100)
     private String description;
 
     private LocalDateTime createdAt;
-
-
 }

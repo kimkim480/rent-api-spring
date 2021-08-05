@@ -6,8 +6,8 @@ import org.springframework.web.multipart.MultipartFile;
 import rocketseat.ignite.rentx.rentx.dto.CategoryDTO;
 import rocketseat.ignite.rentx.rentx.dto.mapper.CategoryMapper;
 import rocketseat.ignite.rentx.rentx.entity.Category;
-import rocketseat.ignite.rentx.rentx.exception.CategoryAlreadyRegisteredException;
-import rocketseat.ignite.rentx.rentx.exception.CategoryNotFoundException;
+import rocketseat.ignite.rentx.rentx.exception.category.CategoryAlreadyRegisteredException;
+import rocketseat.ignite.rentx.rentx.exception.category.CategoryNotFoundException;
 import rocketseat.ignite.rentx.rentx.helper.CSVHelper;
 import rocketseat.ignite.rentx.rentx.repository.CategoryRepository;
 
@@ -70,27 +70,33 @@ public class CategoryService {
 
     public void deleteById(String id) throws CategoryNotFoundException {
         verifyIfCategoryExists(id);
+
         categoryRepository.deleteById(id);
     }
 
     public CategoryDTO findByName(String name) throws CategoryNotFoundException {
         Category foundCategory = categoryRepository.findByName(name)
                 .orElseThrow(() -> new CategoryNotFoundException(name));
+
         return categoryMapper.toDTO(foundCategory);
     }
 
-    public void importCSV(MultipartFile file) {
-        try {
-            List<Category> categories = CSVHelper.csvToCategory(file.getInputStream());
-            categoryRepository.saveAll(categories);
-        } catch (IOException e) {
-            throw new RuntimeException("fail to store csv data: " + e.getMessage());
-        }
+    public void importCSV(MultipartFile file) throws IOException {
+        List<Category> categories = CSVHelper.csvToCategory(file.getInputStream());
+
+        categories.stream().forEach(category -> {
+            try {
+                verifyIfIsAlreadyRegistered(category.getName());
+                categoryRepository.save(category);
+            } catch (CategoryAlreadyRegisteredException e) {
+                throw new RuntimeException("fail to store csv data: " + e.getMessage());
+            }
+        });
     }
 
     private Category verifyIfCategoryExists(String id) throws CategoryNotFoundException {
         return this.categoryRepository.findById(id)
-                .orElseThrow(() -> new CategoryNotFoundException(id));
+                .orElseThrow(() -> new CategoryNotFoundException(String.format("Category not found with ID: %s", id)));
     }
 
     private void verifyIfIsAlreadyRegistered(String name) throws CategoryAlreadyRegisteredException {
@@ -98,7 +104,7 @@ public class CategoryService {
         Optional<Category> categoryAlreadyRegistered = categoryRepository.findByName(name);
 
         if (categoryAlreadyRegistered.isPresent()) {
-            throw new CategoryAlreadyRegisteredException(name);
+            throw new CategoryAlreadyRegisteredException(String.format("Category with name %s already registered in the system", name));
         }
     }
 }

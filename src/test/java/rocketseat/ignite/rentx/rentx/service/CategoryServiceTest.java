@@ -1,7 +1,6 @@
 package rocketseat.ignite.rentx.rentx.service;
 
 
-import org.checkerframework.checker.nullness.Opt;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,8 +12,8 @@ import rocketseat.ignite.rentx.rentx.builder.CategoryDTOBuilder;
 import rocketseat.ignite.rentx.rentx.dto.CategoryDTO;
 import rocketseat.ignite.rentx.rentx.dto.mapper.CategoryMapper;
 import rocketseat.ignite.rentx.rentx.entity.Category;
-import rocketseat.ignite.rentx.rentx.exception.CategoryAlreadyRegisteredException;
-import rocketseat.ignite.rentx.rentx.exception.CategoryNotFoundException;
+import rocketseat.ignite.rentx.rentx.exception.category.CategoryAlreadyRegisteredException;
+import rocketseat.ignite.rentx.rentx.exception.category.CategoryNotFoundException;
 import rocketseat.ignite.rentx.rentx.repository.CategoryRepository;
 
 import java.util.Collections;

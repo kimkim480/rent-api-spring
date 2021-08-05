@@ -5,12 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import rocketseat.ignite.rentx.rentx.dto.CategoryDTO;
-import rocketseat.ignite.rentx.rentx.exception.CategoryAlreadyRegisteredException;
-import rocketseat.ignite.rentx.rentx.exception.CategoryNotFoundException;
+import rocketseat.ignite.rentx.rentx.exception.category.CategoryAlreadyRegisteredException;
+import rocketseat.ignite.rentx.rentx.exception.category.CategoryNotFoundException;
 import rocketseat.ignite.rentx.rentx.helper.CSVHelper;
 import rocketseat.ignite.rentx.rentx.service.CategoryService;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ import java.util.Optional;
 @RequestMapping("/api/v1/categories")
 public class CategoryController {
 
-    private CategoryService categoryService;
+    private final CategoryService categoryService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -49,7 +50,7 @@ public class CategoryController {
     }
 
     @PostMapping("/import")
-    public void importCSV(@RequestParam("file") MultipartFile file) {
+    public void importCSV(@RequestParam("file") MultipartFile file) throws IOException {
         if (CSVHelper.hasCSVFormat(file)) {
             categoryService.importCSV(file);
         }
